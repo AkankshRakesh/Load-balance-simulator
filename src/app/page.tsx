@@ -13,7 +13,7 @@ import {
   PointElement,
   LineElement,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
+import { Chart } from "react-chartjs-2";
 import * as THREE from "three";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -352,7 +352,7 @@ const ACOVisualization = () => {
 
           <Card className="border-none shadow-md bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm">
             <div className="p-4 h-[350px]">
-              <Bar
+              <Chart type="bar"
                 data={{
                   labels: loads.map((_, i) => `Server ${i + 1}`),
                   datasets: [
