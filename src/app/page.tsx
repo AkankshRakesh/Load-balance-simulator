@@ -42,7 +42,7 @@ const ACOVisualization = () => {
   const [isSimulating, setIsSimulating] = useState(false);
   const [taskAssignments, setTaskAssignments] = useState<{server: number, task: number}[]>([]);
   const [currentBatch, setCurrentBatch] = useState<number[]>([]);
-  
+
   // Generate a small batch of tasks (3-5)
   const generateTaskBatch = () => {
     const batchSize = Math.floor(Math.random() * (MAX_TASKS_PER_BATCH - MIN_TASKS_PER_BATCH + 1)) + MIN_TASKS_PER_BATCH;
@@ -56,66 +56,73 @@ const ACOVisualization = () => {
   // Distribute current batch of tasks
   const distributeCurrentBatch = () => {
     if (currentBatch.length === 0) return;
-  
+
     setIsSimulating(true);
-  
+
     const newLoads = [...loads];
     const newPheromones = pheromones.map(p => Math.max(p * PHEROMONE_DECAY, MIN_PHEROMONE));
     const newAssignments: { server: number; task: number }[] = [];
-  
+
+    // Sort tasks in descending order
     const sortedTasks = [...currentBatch].sort((a, b) => b - a);
-  
+
     sortedTasks.forEach((task) => {
-      // Compute probabilities for each server using ACO formula
-      const probabilities = newPheromones.map((pheromone, i) => {
-        return Math.pow(pheromone, ALPHA) * Math.pow(1 / (newLoads[i] + 1), BETA);
-      });
-  
-      const sumProbabilities = probabilities.reduce((sum, p) => sum + p, 0);
-      const normalizedProbabilities = probabilities.map(p => p / sumProbabilities);
-  
-      // Select server probabilistically
-      const random = Math.random();
-      let cumulative = 0;
-      let selectedServer = 0;
-  
-      for (let i = 0; i < normalizedProbabilities.length; i++) {
-        cumulative += normalizedProbabilities[i];
-        if (random <= cumulative) {
-          selectedServer = i;
-          break;
+        // Compute probabilities for each server using ACO formula
+        const probabilities = newPheromones.map((pheromone, i) => {
+            const loadFactor = newLoads[i] > 0 ? newLoads[i] : 1; // Prevent division by zero
+            return Math.pow(pheromone, ALPHA) * Math.pow(1 / loadFactor, BETA);
+        });
+
+        const sumProbabilities = probabilities.reduce((sum, p) => sum + p, 0);
+        const normalizedProbabilities = probabilities.map(p => p / sumProbabilities);
+
+        // Select server probabilistically
+        const random = Math.random();
+        let cumulative = 0;
+        let selectedServer = 0;
+
+        for (let i = 0; i < normalizedProbabilities.length; i++) {
+            cumulative += normalizedProbabilities[i];
+            if (random <= cumulative) {
+                selectedServer = i;
+                break;
+            }
         }
-      }
-  
-      // Assign task
-      newLoads[selectedServer] += task;
-      newAssignments.push({ server: selectedServer, task });
-  
-      // **Pheromone Update Rule**
-      newPheromones[selectedServer] += (Q / task);
+
+        // Assign task
+        newLoads[selectedServer] += task;
+        newAssignments.push({ server: selectedServer, task });
+
+        // **Pheromone Update Rule**
+        const pheromoneContribution = Q / (newLoads[selectedServer] + 1); // Avoiding zero load
+        newPheromones[selectedServer] += pheromoneContribution;
     });
-  
+
     setLoads(newLoads);
     setPheromones(newPheromones);
     setTaskAssignments(newAssignments);
   };
-  
-  
+
+  // Reset simulation
+  const resetSimulation = React.useCallback(() => {
+    setPheromones(Array(servers).fill(INITIAL_PHEROMONE));
+    setLoads(Array(servers).fill(0));
+    setTaskAssignments([]);
+    setCurrentBatch([]);
+    setIsSimulating(false);
+  }, [servers]);
+
+  // Effect to reset simulation when the number of servers changes
+  useEffect(() => {
+    resetSimulation();
+  }, [servers, resetSimulation]);
+
   // Ensure UI updates after assignment
   useEffect(() => {
     if (taskAssignments.length > 0) {
       setIsSimulating(false);
     }
   }, [taskAssignments]);
-  
-
-  const resetSimulation = () => {
-    setPheromones(Array(servers).fill(INITIAL_PHEROMONE));
-    setLoads(Array(servers).fill(0));
-    setTaskAssignments([]);
-    setCurrentBatch([]);
-    setIsSimulating(false);
-  };
 
   // Calculate colors based on load distribution
   const getColorForLoad = (load: number, maxLoad: number) => {
@@ -230,9 +237,8 @@ const ACOVisualization = () => {
                 step={1}
                 value={[servers]}
                 onValueChange={(value) => {
-                  const newServers = value[0]
-                  setServers(newServers)
-                  resetSimulation()
+                  const newServers = value[0];
+                  setServers(newServers);
                 }}
               />
             </div>
