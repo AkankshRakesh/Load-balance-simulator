@@ -23,7 +23,6 @@ import { Slider } from "@/components/ui/slider";
 
 // Constants for easier tuning
 const PHEROMONE_DECAY = 0.8;
-const PHEROMONE_WEIGHT = 0.2;
 const MAX_SERVERS = 10;
 const MIN_TASKS_PER_BATCH = 3;
 const MAX_TASKS_PER_BATCH = 5;
@@ -134,7 +133,7 @@ const ACOVisualization = () => {
   };
 
   const maxLoad = Math.max(...loads, 1);
-  const calculateLoadEfficiency = () => {
+  const efficiency = useMemo(() => {
     const avgLoad = loads.reduce((sum, load) => sum + load, 0) / loads.length;
     const variance = loads.reduce((sum, load) => sum + Math.pow(load - avgLoad, 2), 0) / loads.length;
     const stdDev = Math.sqrt(variance);
@@ -144,9 +143,7 @@ const ACOVisualization = () => {
     const efficiency = 100 * (1 - stdDev / (maxPossibleStdDev || 1));
     
     return Math.max(0, parseFloat(efficiency.toFixed(2))); // Ensuring non-negative values
-  };
-  
-  const efficiency = useMemo(() => calculateLoadEfficiency(), [loads]);
+  }, [loads]);
   
   
   // Server Tower Component
