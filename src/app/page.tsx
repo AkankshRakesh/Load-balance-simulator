@@ -2,18 +2,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Title,
-  Tooltip,
-  Legend,
-  PointElement,
-  LineElement,
-} from "chart.js";
-import { Chart } from "react-chartjs-2";
+import { Chart as ChartJS, BarController, LineController, CategoryScale, LinearScale, PointElement, BarElement, LineElement, Title, Tooltip, Legend } from "chart.js";
+import { Bar, Chart } from "react-chartjs-2";
 import * as THREE from "three";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,14 +23,16 @@ const MIN_PHEROMONE = 0.1;
 const Q = 10;    
 
 ChartJS.register(
-  BarElement,
+  BarController,
+  LineController,
   CategoryScale,
   LinearScale,
+  PointElement,
+  BarElement,
+  LineElement,
   Title,
   Tooltip,
-  Legend,
-  PointElement,
-  LineElement
+  Legend
 );
 
 const ACOVisualization = () => {
