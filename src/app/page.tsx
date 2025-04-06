@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState,  useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import { Chart as ChartJS, BarController, LineController, CategoryScale, LinearScale, PointElement, BarElement, LineElement, Title, Tooltip, Legend } from "chart.js";
@@ -7,18 +7,16 @@ import { Chart } from "react-chartjs-2";
 import * as THREE from "three";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AnimatePresence, motion } from "framer-motion";
 import { Server, Activity, BarChart3, RefreshCw } from "lucide-react"
 import { Slider } from "@/components/ui/slider";
 
-// Constants for easier tuning
 const PHEROMONE_DECAY = 0.8;
 const MAX_SERVERS = 10;
 const MIN_TASKS_PER_BATCH = 3;
 const MAX_TASKS_PER_BATCH = 5;
 const INITIAL_PHEROMONE = 1.0;
-const ALPHA = 1.0;  // Influence of pheromone
-const BETA = 2.0;   // Influence of task size
+const ALPHA = 1.0;  
+const BETA = 2.0;   
 const MIN_PHEROMONE = 0.1;
 const Q = 10;    
 
@@ -43,17 +41,135 @@ const ACOVisualization = () => {
   const [taskAssignments, setTaskAssignments] = useState<{server: number, task: number}[]>([]);
   const [currentBatch, setCurrentBatch] = useState<number[]>([]);
 
-  // Generate a small batch of tasks (3-5)
   const generateTaskBatch = () => {
     const batchSize = Math.floor(Math.random() * (MAX_TASKS_PER_BATCH - MIN_TASKS_PER_BATCH + 1)) + MIN_TASKS_PER_BATCH;
     const newTasks = Array.from({ length: batchSize }, () => 
-      Math.floor(Math.random() * 20) + 5 // Tasks between 5-25
+      Math.floor(Math.random() * 20) + 5 
     );
     setCurrentBatch(newTasks);
-    setIsSimulating(false); // Reset simulation state
+    setIsSimulating(false);
   };
-
-  // Distribute current batch of tasks
+  const FactorsPanel = () => {
+    return (
+      <Card className="border-none shadow-md bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">ACO Parameters</CardTitle>
+          <CardDescription>Factors affecting task distribution</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Pheromone Factors */}
+            <div className="space-y-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                Pheromone
+              </h4>
+              <div className="text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span>Initial:</span>
+                  <span className="font-mono">{INITIAL_PHEROMONE.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Decay:</span>
+                  <span className="font-mono">{PHEROMONE_DECAY.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Min:</span>
+                  <span className="font-mono">{MIN_PHEROMONE.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Deposit (Q):</span>
+                  <span className="font-mono">{Q}</span>
+                </div>
+              </div>
+            </div>
+  
+            {/* Load Factors */}
+            <div className="space-y-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                Load Balancing
+              </h4>
+              <div className="text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span>Alpha (pheromone weight):</span>
+                  <span className="font-mono">{ALPHA.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Beta (load weight):</span>
+                  <span className="font-mono">{BETA.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Current max load:</span>
+                  <span className="font-mono">{Math.max(...loads, 0)}</span>
+                </div>
+              </div>
+            </div>
+  
+            {/* Task Factors */}
+            <div className="space-y-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                Task Batch
+              </h4>
+              <div className="text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span>Batch size:</span>
+                  <span className="font-mono">{currentBatch.length > 0 ? currentBatch.length : '0'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Min tasks:</span>
+                  <span className="font-mono">{MIN_TASKS_PER_BATCH}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Max tasks:</span>
+                  <span className="font-mono">{MAX_TASKS_PER_BATCH}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Current tasks:</span>
+                  <span className="font-mono">{currentBatch.join(', ') || 'None'}</span>
+                </div>
+              </div>
+            </div>
+  
+            {/* Probability Factors */}
+            <div className="space-y-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                Current Probabilities
+              </h4>
+              <div className="text-xs space-y-1">
+                {servers > 0 && pheromones.map((p, i) => {
+                  const load = loads[i] || 1;
+                  const probability = Math.pow(p, ALPHA) * Math.pow(1/load, BETA);
+                  const total = pheromones.reduce((sum, p, j) => {
+                    const l = loads[j] || 1;
+                    return sum + Math.pow(p, ALPHA) * Math.pow(1/l, BETA);
+                  }, 0);
+                  const normalized = (probability / total) * 100;
+                  return (
+                    <div key={i} className="flex justify-between items-center">
+                      <span>S{i+1}:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono w-10 text-right">{normalized.toFixed(1)}%</span>
+                        <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-amber-500" 
+                            style={{ width: `${normalized}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+  
   const distributeCurrentBatch = () => {
     if (currentBatch.length === 0) return;
 
@@ -63,20 +179,17 @@ const ACOVisualization = () => {
     const newPheromones = pheromones.map(p => Math.max(p * PHEROMONE_DECAY, MIN_PHEROMONE));
     const newAssignments: { server: number; task: number }[] = [];
 
-    // Sort tasks in descending order
     const sortedTasks = [...currentBatch].sort((a, b) => b - a);
-
+    console.log(sortedTasks);
     sortedTasks.forEach((task) => {
-        // Compute probabilities for each server using ACO formula
         const probabilities = newPheromones.map((pheromone, i) => {
-            const loadFactor = newLoads[i] > 0 ? newLoads[i] : 1; // Prevent division by zero
+            const loadFactor = newLoads[i] > 0 ? newLoads[i] : 1; 
             return Math.pow(pheromone, ALPHA) * Math.pow(1 / loadFactor, BETA);
         });
 
         const sumProbabilities = probabilities.reduce((sum, p) => sum + p, 0);
         const normalizedProbabilities = probabilities.map(p => p / sumProbabilities);
 
-        // Select server probabilistically
         const random = Math.random();
         let cumulative = 0;
         let selectedServer = 0;
@@ -89,12 +202,11 @@ const ACOVisualization = () => {
             }
         }
 
-        // Assign task
         newLoads[selectedServer] += task;
         newAssignments.push({ server: selectedServer, task });
-
-        // **Pheromone Update Rule**
-        const pheromoneContribution = Q / (newLoads[selectedServer] + 1); // Avoiding zero load
+        newAssignments.sort((a, b) => b.server - a.server);
+        
+        const pheromoneContribution = Q / (newLoads[selectedServer] + 1); 
         newPheromones[selectedServer] += pheromoneContribution;
     });
 
@@ -103,7 +215,6 @@ const ACOVisualization = () => {
     setTaskAssignments(newAssignments);
   };
 
-  // Reset simulation
   const resetSimulation = React.useCallback(() => {
     setPheromones(Array(servers).fill(INITIAL_PHEROMONE));
     setLoads(Array(servers).fill(0));
@@ -112,19 +223,16 @@ const ACOVisualization = () => {
     setIsSimulating(false);
   }, [servers]);
 
-  // Effect to reset simulation when the number of servers changes
   useEffect(() => {
     resetSimulation();
   }, [servers, resetSimulation]);
 
-  // Ensure UI updates after assignment
   useEffect(() => {
     if (taskAssignments.length > 0) {
       setIsSimulating(false);
     }
   }, [taskAssignments]);
 
-  // Calculate colors based on load distribution
   const getColorForLoad = (load: number, maxLoad: number) => {
     const normalizedLoad = maxLoad > 0 ? load / maxLoad : 0;
     const hue = 120 - normalizedLoad * 120;
@@ -132,20 +240,9 @@ const ACOVisualization = () => {
   };
 
   const maxLoad = Math.max(...loads, 1);
-  const efficiency = useMemo(() => {
-    const avgLoad = loads.reduce((sum, load) => sum + load, 0) / loads.length;
-    const variance = loads.reduce((sum, load) => sum + Math.pow(load - avgLoad, 2), 0) / loads.length;
-    const stdDev = Math.sqrt(variance);
-    
-    // Normalize efficiency to a percentage (100 = perfect balance, 0 = worst case)
-    const maxPossibleStdDev = avgLoad; // Approximation for normalization
-    const efficiency = 100 * (1 - stdDev / (maxPossibleStdDev || 1));
-    
-    return Math.max(0, parseFloat(efficiency.toFixed(2))); // Ensuring non-negative values
-  }, [loads]);
   
   
-  // Server Tower Component
+  
   const ServerTower = ({ position, load, maxLoad, index, isActive }: {
     position: [number, number, number];
     load: number;
@@ -274,35 +371,8 @@ const ACOVisualization = () => {
         </CardContent>
       </Card>
       
-      <AnimatePresence>
-      {currentBatch.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="p-4 bg-gray-50 rounded-lg"
-        >
-          <h3 className="font-medium mb-2">Current Batch: {currentBatch.join(', ')}</h3>
-          <div className="flex flex-wrap gap-2">
-            {taskAssignments.slice(-5).reverse().map((assignment, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  assignment.server % 3 === 0 ? 'bg-blue-100 text-blue-800' :
-                  assignment.server % 3 === 1 ? 'bg-green-100 text-green-800' :
-                  'bg-purple-100 text-purple-800'
-                }`}
-              >
-                {assignment.task} → S{assignment.server + 1}
-              </motion.div>
-            ))}
-            <h3 className="font-medium">Total Efficiency: {efficiency}%</h3>
-          </div>
-        </motion.div>
-      )}
-      </AnimatePresence>
-
+      
+<FactorsPanel />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="border-none shadow-md overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm">
             <div className="h-[350px]">
@@ -422,7 +492,7 @@ const ACOVisualization = () => {
                   },
                   animation: {
                     duration: 1000,
-                    easing: "easeOutQuart",
+                    easing: "easeInOutQuart",
                   },
                 }}
               />
@@ -430,6 +500,65 @@ const ACOVisualization = () => {
           </Card>
           
       </div>
+      <Card>
+  <CardHeader>
+    <CardTitle>Task Assignment Overview</CardTitle>
+    <CardDescription>See which server handled which tasks</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <div className="overflow-x-auto">
+      <table className="min-w-full border border-gray-300">
+        <thead>
+          <tr>
+            <th className="border px-4 py-2 text-left">Server</th>
+            <th className="border px-4 py-2 text-left">Tasks Assigned</th>
+          </tr>
+        </thead>
+        <tbody>
+      {taskAssignments.slice(-5).reverse().map((assignment, i) => (
+            <tr key={i}>
+              <td className="border px-4 py-2">Server {assignment.server + 1}</td>
+              <td className="border px-4 py-2">{assignment.task}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </CardContent>
+</Card>
+<div className="mt-4 p-3 bg-gray-100 rounded-lg">
+          <h4 className="font-medium text-sm">Probability Formula</h4>
+          <p className="text-xs">
+            P(S<sub>i</sub>) = 
+            <span className="font-mono"> (P<sub>i</sub><sup>&alpha;</sup>/ L<sub>i</sub><sup>β</sup>) / Σ(P<sub>tot</sub><sup>&alpha;</sup>/ L<sub>tot</sub><sup>β</sup>) </span>
+          </p>
+          <p className="text-xs">
+            Where:
+          </p>
+          <ul className="text-xs list-disc list-inside">
+            <li>P<sub>i</sub>: Pheromone level of server i</li>
+            <li>L<sub>i</sub>: Load of server i</li>
+            <li>&alpha;: Pheromone weight</li>
+            <li>β: Load weight</li>
+          </ul>
+        </div>
+        <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+          <h4 className="font-medium text-sm">Pheromone Update Formula</h4>
+          <p className="text-xs">
+            P(S<sub>i</sub>) = (1 - ρ) * P(S<sub>i</sub>) + ΔP(S<sub>i</sub>)
+          </p>
+          <p className="text-xs">
+            Where ΔP(S<sub>i</sub>) = Q / (L(S<sub>i</sub>) + 1)
+          </p>
+          <p className="text-xs">
+            Where:
+          </p>
+          <ul className="text-xs list-disc list-inside">
+            <li>ρ: Pheromone decay rate</li>
+            <li>Q: Pheromone deposit constant</li>
+            <li>L(S<sub>i</sub>): Load of server i</li>
+          </ul>
+        </div>
       <Card className="border-none shadow-md bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">How It Works</CardTitle>
