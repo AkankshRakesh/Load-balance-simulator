@@ -489,7 +489,7 @@ const ACOVisualization = () => {
     }
 
     const step = calculationSteps[currentStep]
-
+    
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
@@ -677,7 +677,97 @@ const ACOVisualization = () => {
       </div>
     )
   }
+  // interface ChartOptions {
+  //   responsive: boolean;
+  //   maintainAspectRatio: boolean;
+  //   scales: {
+  //     y: {
+  //       beginAtZero: boolean;
+  //       title: { display: boolean; text: string; font: { weight: string } };
+  //       grid: { color: string };
+  //     };
+  //     y1: {
+  //       position: "right";
+  //       beginAtZero: boolean;
+  //       title: { display: boolean; text: string; font: { weight: string } };
+  //       grid: { drawOnChartArea: boolean };
+  //     };
+  //     x: {
+  //       title: { display: boolean; text: string; font: { weight: string } };
+  //       grid: { color: string };
+  //     };
+  //   };
+  //   plugins: {
+  //     legend: {
+  //       position: "top";
+  //       labels: { font: { size: number } };
+  //     };
+  //     tooltip: {
+  //       backgroundColor: string;
+  //       titleFont: { size: number };
+  //       bodyFont: { size: number };
+  //       padding: number;
+  //       cornerRadius: number;
+  //       callbacks: {
+  //         label: (tooltipItem: { datasetIndex: number; parsed: { y: number } }) => string;
+  //       };
+  //     };
+  //   };
+  //   animation: {
+  //     duration: number;
+  //     easing: "easeInOutQuad";
+  //   };
+  // }
 
+  // const chartOptions: ChartOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   scales: {
+  //     y: {
+  //       beginAtZero: true,
+  //       title: { display: true, text: "Load", font: { weight: "bold" } },
+  //       grid: { color: "rgba(0,0,0,0.05)" },
+  //     },
+  //     y1: {
+  //       position: "right",
+  //       beginAtZero: true,
+  //       title: { display: true, text: "Pheromone Strength", font: { weight: "bold" } },
+  //       grid: { drawOnChartArea: false },
+  //     },
+  //     x: {
+  //       title: { display: true, text: "Servers", font: { weight: "bold" } },
+  //       grid: { color: "rgba(0,0,0,0.05)" },
+  //     },
+  //   },
+  //   plugins: {
+  //     legend: {
+  //       position: "top",
+  //       labels: { font: { size: 12 } },
+  //     },
+  //     tooltip: {
+  //       backgroundColor: "rgba(0,0,0,0.8)",
+  //       titleFont: { size: 14 },
+  //       bodyFont: { size: 13 },
+  //       padding: 10,
+  //       cornerRadius: 6,
+  //       callbacks: {
+  //         label: (tooltipItem) => {
+  //           const datasetIndex = tooltipItem.datasetIndex;
+  //           const value = tooltipItem.parsed.y;
+  //           if (datasetIndex === 0) {
+  //             return `Load: ${value}`;
+  //           } else {
+  //             return `Pheromone: ${value.toFixed(2)}`;
+  //           }
+  //         },
+  //       },
+  //     },
+  //   },
+  //   animation: {
+  //     duration: 1000,
+  //     easing: "easeInOutQuad",
+  //   },
+  // };
   return (
     <div className="p-4 space-y-6">
       <Card className="border-none shadow-md bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm">
@@ -833,93 +923,7 @@ const ACOVisualization = () => {
                 tension?: number;
               }>;
               }}
-              options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              scales: {
-                y: {
-                beginAtZero: true,
-                title: { display: true, text: "Load", font: { weight: "bold" } },
-                grid: { color: "rgba(0,0,0,0.05)" },
-                },
-                y1: {
-                position: "right",
-                beginAtZero: true,
-                title: { display: true, text: "Pheromone Strength", font: { weight: "bold" } },
-                grid: { drawOnChartArea: false },
-                },
-                x: {
-                title: { display: true, text: "Servers", font: { weight: "bold" } },
-                grid: { color: "rgba(0,0,0,0.05)" },
-                },
-              },
-              plugins: {
-                legend: {
-                position: "top",
-                labels: { font: { size: 12 } },
-                },
-                tooltip: {
-                backgroundColor: "rgba(0,0,0,0.8)",
-                titleFont: { size: 14 },
-                bodyFont: { size: 13 },
-                padding: 10,
-                cornerRadius: 6,
-                callbacks: {
-                  label: (ctx: { datasetIndex: number; raw: number }) => {
-                  if (ctx.datasetIndex === 0) {
-                    return `Load: ${ctx.raw}`;
-                  } else {
-                    return `Pheromone: ${(ctx.raw as number)?.toFixed(2)}`;
-                  }
-                  },
-                },
-                },
-              },
-              animation: {
-                duration: 1000,
-                easing: "easeInOutQuad",
-              },
-              } as {
-              responsive: boolean;
-              maintainAspectRatio: boolean;
-              scales: {
-                y: {
-                beginAtZero: boolean;
-                title: { display: boolean; text: string; font: { weight: string } };
-                grid: { color: string };
-                };
-                y1: {
-                position: string;
-                beginAtZero: boolean;
-                title: { display: boolean; text: string; font: { weight: string } };
-                grid: { drawOnChartArea: boolean };
-                };
-                x: {
-                title: { display: boolean; text: string; font: { weight: string } };
-                grid: { color: string };
-                };
-              };
-              plugins: {
-                legend: {
-                position: string;
-                labels: { font: { size: number } };
-                };
-                tooltip: {
-                backgroundColor: string;
-                titleFont: { size: number };
-                bodyFont: { size: number };
-                padding: number;
-                cornerRadius: number;
-                callbacks: {
-                  label: (ctx: { datasetIndex: number; raw: number }) => string;
-                };
-                };
-              };
-              animation: {
-                duration: number;
-                easing: string;
-              };
-              }}
+              // options={chartOptions}
             />
             </div>
         </Card>
