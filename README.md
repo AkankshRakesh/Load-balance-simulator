@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐜 Load Balance Simulator — ACO-Based Memory Allocation
 
-## Getting Started
+Welcome to the **Load Balance Simulator**, a visual and interactive tool simulating **Ant Colony Optimization (ACO)** for **dynamic memory allocation** in operating systems. This project showcases how bio-inspired algorithms like ACO can be used for **intelligent task assignment** and **load balancing**.
 
-First, run the development server:
+Built with **Next.js**, **React (TypeScript)**, **TailwindCSS**, and **shadcn/ui**, it offers an intuitive way to understand ACO-driven memory optimization.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 Core Concept
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Ant Colony Optimization (ACO) is a **metaheuristic inspired by the foraging behavior of ants**, where virtual "ants" traverse a graph of memory blocks to find the most optimal allocation based on:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 🐜 **Pheromone Trails**: Indicate historical preference and low memory load.
+- ⚖️ **Heuristic Value**: Based on memory access speed, usage, and fragmentation.
+- 🔁 **Probabilistic Selection**: Ants probabilistically select the next best block using pheromone intensity and heuristics.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## 🧩 Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 📊 **Visual ACO Simulation**: Watch ants select optimal memory blocks in real-time.
+- 📦 **Dynamic Factors**:
+  - Access Frequency
+  - Access Speed
+  - Memory Usage
+  - Fragmentation Level
+- 🌐 Built with:
+  - `Next.js 13 (App Router)`
+  - `TypeScript + TailwindCSS`
+  - `shadcn/ui` components (card, slider, tabs, etc.)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project link
+It is live at https://aco-rho.vercel.app/
 
-## Deploy on Vercel
+## Photos
+![image](https://github.com/user-attachments/assets/59b3b2e7-fee5-44b5-bd0a-9fa44616eba4)
+![image](https://github.com/user-attachments/assets/e39db6fe-6ce8-4900-9240-1466fb715dc1)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
